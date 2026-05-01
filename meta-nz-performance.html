@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta NZ – Campaign Performance Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #1c1e21; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 32px 20px; }
+
+  /* Header */
+  .header { background: #1877f2; color: #fff; border-radius: 12px; padding: 28px 32px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 12px; }
+  .header h1 { font-size: 1.6rem; font-weight: 700; }
+  .header .meta { font-size: 0.88rem; opacity: 0.85; margin-top: 4px; }
+  .badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+
+  /* Summary cards */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+  .card { background: #fff; border-radius: 10px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .card .label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #65676b; margin-bottom: 8px; }
+  .card .value { font-size: 1.8rem; font-weight: 700; color: #1877f2; line-height: 1; }
+  .card .sub { font-size: 0.8rem; color: #65676b; margin-top: 6px; }
+  .card.green .value { color: #2e7d32; }
+  .card.orange .value { color: #e65100; }
+
+  /* Daily chart */
+  .chart-block { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 28px; }
+  .chart-block h2 { font-size: 1rem; font-weight: 700; margin-bottom: 18px; color: #1c1e21; }
+  .chart-wrap { position: relative; height: 260px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #fff; border-radius: 10px; padding: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); width: fit-content; }
+  .tab { padding: 8px 22px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; background: transparent; color: #65676b; transition: all 0.15s; }
+  .tab.active { background: #1877f2; color: #fff; }
+
+  /* Table */
+  .table-block { background: #fff; border-radius: 10px; padding: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 28px; }
+  .table-block h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  thead th { text-align: left; padding: 8px 12px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #65676b; border-bottom: 2px solid #e4e6eb; }
+  thead th.num { text-align: right; }
+  tbody td { padding: 11px 12px; border-bottom: 1px solid #f0f2f5; vertical-align: middle; }
+  tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:last-child td { border-bottom: none; font-weight: 700; background: #f7f8fa; }
+  tbody tr:hover:not(:last-child) td { background: #f7f8fa; }
+  .camp-name { font-weight: 500; max-width: 340px; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+  .pill.blue { background: #e7f3ff; color: #1877f2; }
+  .pill.grey { background: #f0f2f5; color: #65676b; }
+  .pill.green { background: #e6f4ea; color: #2e7d32; }
+
+  /* Window summary bar */
+  .window-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px; }
+  .ws-card { background: #f7f8fa; border-radius: 8px; padding: 16px 18px; border-left: 4px solid #1877f2; }
+  .ws-card .wl { font-size: 0.72rem; color: #65676b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .ws-card .wv { font-size: 1.4rem; font-weight: 700; color: #1c1e21; margin-top: 2px; }
+  .ws-card.leads { border-color: #2e7d32; }
+  .ws-card.cpl { border-color: #e65100; }
+
+  /* Charts row */
+  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .chart-block.half { margin-bottom: 0; }
+  .chart-wrap.sm { height: 220px; }
+
+  /* Footnote */
+  .footnote { font-size: 0.76rem; color: #65676b; text-align: center; padding: 16px; }
+
+  @media (max-width: 680px) {
+    .cards { grid-template-columns: 1fr; }
+    .charts-row { grid-template-columns: 1fr; }
+    .window-summary { grid-template-columns: 1fr; }
+    .header { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>Cluey Learning – NZ</h1>
+      <div class="meta">Meta Ads · Account act_3198666700456941 · Currency: NZD</div>
+    </div>
+    <div class="badge">Last spend: 12 May 2025</div>
+  </div>
+
+  <!-- Top-level summary cards -->
+  <div class="cards">
+    <div class="card">
+      <div class="label">Active Period</div>
+      <div class="value" style="font-size:1.3rem">28 Apr – 12 May 2025</div>
+      <div class="sub">15 days · 3 campaigns</div>
+    </div>
+    <div class="card green">
+      <div class="label">Total Leads (active period)</div>
+      <div class="value">90</div>
+      <div class="sub">NZ$4,490.25 total spend</div>
+    </div>
+    <div class="card orange">
+      <div class="label">Blended CPL (active period)</div>
+      <div class="value">NZ$49.89</div>
+      <div class="sub">Best CPL: NZ$25.48 (7-day)</div>
+    </div>
+  </div>
+
+  <!-- Daily trend chart -->
+  <div class="chart-block">
+    <h2>Daily Spend &amp; Leads — 28 Apr to 12 May 2025</h2>
+    <div class="chart-wrap">
+      <canvas id="dailyChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Window tabs + tables -->
+  <div class="tabs">
+    <button class="tab active" onclick="showWindow('w7',this)">Last 7 Days</button>
+    <button class="tab" onclick="showWindow('w14',this)">Last 14 Days</button>
+    <button class="tab" onclick="showWindow('w30',this)">Last 30 Days</button>
+  </div>
+
+  <!-- 7 Day window -->
+  <div id="w7">
+    <div class="window-summary">
+      <div class="ws-card"><div class="wl">Spend</div><div class="wv">NZ$1,721.26</div></div>
+      <div class="ws-card leads"><div class="wl">Leads</div><div class="wv">38</div></div>
+      <div class="ws-card cpl"><div class="wl">Blended CPL</div><div class="wv">NZ$45.30</div></div>
+    </div>
+    <div class="table-block">
+      <h2>Campaign Breakdown · 6–12 May 2025</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th class="num">Spend (NZD)</th>
+            <th class="num">Leads</th>
+            <th class="num">CPL (NZD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="camp-name">Special Needs – Web Conversions <span class="pill blue">Main</span></td>
+            <td class="num">$942.63</td>
+            <td class="num">37</td>
+            <td class="num">$25.48</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Website Traffic <span class="pill grey">Traffic</span></td>
+            <td class="num">$387.27</td>
+            <td class="num">1</td>
+            <td class="num">$387.27</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Test – Website Traffic <span class="pill grey">Test</span></td>
+            <td class="num">$391.36</td>
+            <td class="num">0</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td class="num">$1,721.26</td>
+            <td class="num">38</td>
+            <td class="num">$45.30</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="charts-row">
+      <div class="chart-block half">
+        <h2>Spend by Campaign (7d)</h2>
+        <div class="chart-wrap sm"><canvas id="spendChart7"></canvas></div>
+      </div>
+      <div class="chart-block half">
+        <h2>CPL by Campaign (7d)</h2>
+        <div class="chart-wrap sm"><canvas id="cplChart7"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 14 Day window -->
+  <div id="w14" style="display:none">
+    <div class="window-summary">
+      <div class="ws-card"><div class="wl">Spend</div><div class="wv">NZ$4,455.14</div></div>
+      <div class="ws-card leads"><div class="wl">Leads</div><div class="wv">90</div></div>
+      <div class="ws-card cpl"><div class="wl">Blended CPL</div><div class="wv">NZ$49.50</div></div>
+    </div>
+    <div class="table-block">
+      <h2>Campaign Breakdown · 29 Apr – 12 May 2025</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th class="num">Spend (NZD)</th>
+            <th class="num">Leads</th>
+            <th class="num">CPL (NZD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="camp-name">Special Needs – Web Conversions <span class="pill blue">Main</span></td>
+            <td class="num">$3,676.51</td>
+            <td class="num">89</td>
+            <td class="num">$41.31</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Website Traffic <span class="pill grey">Traffic</span></td>
+            <td class="num">$387.27</td>
+            <td class="num">1</td>
+            <td class="num">$387.27</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Test – Website Traffic <span class="pill grey">Test</span></td>
+            <td class="num">$391.36</td>
+            <td class="num">0</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td class="num">$4,455.14</td>
+            <td class="num">90</td>
+            <td class="num">$49.50</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="charts-row">
+      <div class="chart-block half">
+        <h2>Spend by Campaign (14d)</h2>
+        <div class="chart-wrap sm"><canvas id="spendChart14"></canvas></div>
+      </div>
+      <div class="chart-block half">
+        <h2>CPL by Campaign (14d)</h2>
+        <div class="chart-wrap sm"><canvas id="cplChart14"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 30 Day window -->
+  <div id="w30" style="display:none">
+    <div class="window-summary">
+      <div class="ws-card"><div class="wl">Spend</div><div class="wv">NZ$4,490.25</div></div>
+      <div class="ws-card leads"><div class="wl">Leads</div><div class="wv">90</div></div>
+      <div class="ws-card cpl"><div class="wl">Blended CPL</div><div class="wv">NZ$49.89</div></div>
+    </div>
+    <div class="table-block">
+      <h2>Campaign Breakdown · 13 Apr – 12 May 2025</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th class="num">Spend (NZD)</th>
+            <th class="num">Leads</th>
+            <th class="num">CPL (NZD)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="camp-name">Special Needs – Web Conversions <span class="pill blue">Main</span></td>
+            <td class="num">$3,711.62</td>
+            <td class="num">89</td>
+            <td class="num">$41.70</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Website Traffic <span class="pill grey">Traffic</span></td>
+            <td class="num">$387.27</td>
+            <td class="num">1</td>
+            <td class="num">$387.27</td>
+          </tr>
+          <tr>
+            <td class="camp-name">Test – Website Traffic <span class="pill grey">Test</span></td>
+            <td class="num">$391.36</td>
+            <td class="num">0</td>
+            <td class="num">—</td>
+          </tr>
+          <tr>
+            <td>Total</td>
+            <td class="num">$4,490.25</td>
+            <td class="num">90</td>
+            <td class="num">$49.89</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="charts-row">
+      <div class="chart-block half">
+        <h2>Spend by Campaign (30d)</h2>
+        <div class="chart-wrap sm"><canvas id="spendChart30"></canvas></div>
+      </div>
+      <div class="chart-block half">
+        <h2>CPL by Campaign (30d)</h2>
+        <div class="chart-wrap sm"><canvas id="cplChart30"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Data sourced from Meta Ads API via Pipeboard · All amounts in NZD · Generated 01/05/2026
+  </div>
+</div>
+
+<script>
+// Tab switcher
+function showWindow(id, btn) {
+  ['w7','w14','w30'].forEach(w => document.getElementById(w).style.display = w === id ? '' : 'none');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+const BLUE  = '#1877f2';
+const GREEN = '#2e7d32';
+const ORANGE = '#e65100';
+const GREY  = '#90949c';
+
+// Shared chart defaults
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+Chart.defaults.font.size = 11;
+
+// --- Daily trend chart ---
+new Chart(document.getElementById('dailyChart'), {
+  data: {
+    labels: ['28 Apr','29 Apr','30 Apr','1 May','2 May','3 May','4 May','5 May','6 May','7 May','8 May','9 May','10 May','11 May','12 May'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Daily Spend (NZD)',
+        data: [35.11, 288.63, 588.20, 790.53, 539.80, 227.86, 158.08, 140.78, 104.23, 115.07, 270.37, 345.74, 324.65, 399.95, 161.25],
+        backgroundColor: 'rgba(24,119,242,0.18)',
+        borderColor: BLUE,
+        borderWidth: 1.5,
+        borderRadius: 4,
+        yAxisID: 'ySpend',
+        order: 2
+      },
+      {
+        type: 'line',
+        label: 'Daily Leads',
+        data: [0, 17, 12, 8, 9, 3, 2, 1, 4, 6, 13, 6, 2, 6, 1],
+        borderColor: GREEN,
+        backgroundColor: 'rgba(46,125,50,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: GREEN,
+        tension: 0.35,
+        fill: true,
+        yAxisID: 'yLeads',
+        order: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 12, padding: 16 } },
+      tooltip: {
+        callbacks: {
+          label: ctx => ctx.datasetIndex === 0
+            ? ` Spend: NZ$${ctx.parsed.y.toFixed(2)}`
+            : ` Leads: ${ctx.parsed.y}`
+        }
+      }
+    },
+    scales: {
+      ySpend: {
+        type: 'linear', position: 'left',
+        grid: { color: 'rgba(0,0,0,0.05)' },
+        ticks: { callback: v => 'NZ$' + v }
+      },
+      yLeads: {
+        type: 'linear', position: 'right',
+        grid: { drawOnChartArea: false },
+        ticks: { stepSize: 2 }
+      },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Helper: donut for spend split
+function spendDonut(id, data) {
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      labels: ['Special Needs', 'Website Traffic', 'Test – Website Traffic'],
+      datasets: [{ data, backgroundColor: [BLUE, '#42a5f5', GREY], borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 10, padding: 10 } },
+        tooltip: { callbacks: { label: ctx => ` NZ$${ctx.parsed.toFixed(2)}` } }
+      }
+    }
+  });
+}
+
+// Helper: horizontal bar for CPL
+function cplBar(id, data) {
+  new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: {
+      labels: ['Special Needs', 'Website Traffic'],
+      datasets: [{
+        label: 'CPL (NZD)',
+        data,
+        backgroundColor: [BLUE, GREY],
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` NZ$${ctx.parsed.x.toFixed(2)}` } }
+      },
+      scales: {
+        x: { ticks: { callback: v => 'NZ$' + v }, grid: { color: 'rgba(0,0,0,0.05)' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+spendDonut('spendChart7',  [942.63,  387.27, 391.36]);
+spendDonut('spendChart14', [3676.51, 387.27, 391.36]);
+spendDonut('spendChart30', [3711.62, 387.27, 391.36]);
+
+cplBar('cplChart7',  [25.48,  387.27]);
+cplBar('cplChart14', [41.31,  387.27]);
+cplBar('cplChart30', [41.70,  387.27]);
+</script>
+</body>
+</html>
