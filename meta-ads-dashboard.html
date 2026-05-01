@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cluey Learning — Meta Ads Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dark-green: #123329;
+      --emerald:    #19B269;
+      --lime:       #B2E67B;
+      --orange:     #F36D21;
+      --pastel-blue:#B7E2E2;
+      --ivory:      #EFE9E1;
+      --charcoal:   #231F20;
+      --khaki:      #E6E4AC;
+    }
+
+    body {
+      background: var(--ivory);
+      color: var(--charcoal);
+      font-family: 'Poppins', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--dark-green);
+      color: #fff;
+      padding: 32px 40px 28px;
+    }
+
+    .header-eyebrow {
+      font-family: 'Poppins', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 8px;
+    }
+
+    header h1 {
+      font-family: 'Merriweather', serif;
+      font-weight: 300;
+      font-size: 28px;
+      line-height: 1.2;
+      color: #fff;
+    }
+
+    header h1 span {
+      color: var(--emerald);
+    }
+
+    .header-meta {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--lime);
+      opacity: 0.85;
+    }
+
+    .header-meta strong {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-family: 'Merriweather', serif;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--dark-green);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: var(--emerald);
+      opacity: 0.3;
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .kpi-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px 20px 18px;
+      border-top: 4px solid var(--emerald);
+      box-shadow: 0 1px 4px rgba(18,51,41,0.07);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(18,51,41,0.12);
+    }
+
+    .kpi-card.accent-orange { border-top-color: var(--orange); }
+    .kpi-card.accent-lime   { border-top-color: var(--lime); }
+    .kpi-card.accent-blue   { border-top-color: var(--pastel-blue); }
+
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .kpi-value {
+      font-family: 'Merriweather', serif;
+      font-weight: 600;
+      font-size: 30px;
+      color: var(--dark-green);
+      line-height: 1;
+    }
+
+    .kpi-value.small {
+      font-size: 22px;
+    }
+
+    .kpi-subtext {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 6px;
+    }
+
+    /* ── Bar chart ── */
+    .bar-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 1px 4px rgba(18,51,41,0.07);
+      margin-bottom: 24px;
+    }
+
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bar-row-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--charcoal);
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      background: var(--ivory);
+      border-radius: 4px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--emerald);
+    }
+
+    .bar-fill.orange { background: var(--orange); }
+    .bar-fill.lime   { background: var(--lime); }
+    .bar-fill.blue   { background: var(--pastel-blue); }
+
+    .bar-row-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--dark-green);
+      width: 80px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Note ── */
+    .note {
+      background: var(--khaki);
+      border-left: 4px solid var(--orange);
+      border-radius: 0 8px 8px 0;
+      padding: 16px 20px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--charcoal);
+    }
+
+    .note strong {
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--dark-green);
+      text-align: center;
+      padding: 20px;
+      font-size: 11px;
+      color: var(--lime);
+      opacity: 0.8;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-eyebrow">Performance Report</div>
+    <h1>Cluey Learning <span>Meta Ads</span></h1>
+    <div class="header-meta">
+      <strong>24 Apr – 30 Apr 2026</strong> &nbsp;·&nbsp; Account: Cluey Learning AU &nbsp;·&nbsp; Last 7 days
+    </div>
+  </header>
+
+  <main>
+
+    <!-- KPI Cards -->
+    <div class="section-label">Account summary</div>
+    <div class="kpi-grid">
+
+      <div class="kpi-card accent-orange">
+        <div class="kpi-label">Spend</div>
+        <div class="kpi-value">$10,461</div>
+        <div class="kpi-subtext">7-day total (approx.)</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Impressions</div>
+        <div class="kpi-value small">579,195</div>
+        <div class="kpi-subtext">7-day total</div>
+      </div>
+
+      <div class="kpi-card accent-lime">
+        <div class="kpi-label">Clicks</div>
+        <div class="kpi-value">5,357</div>
+        <div class="kpi-subtext">7-day total</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Avg CTR</div>
+        <div class="kpi-value">0.93%</div>
+        <div class="kpi-subtext">Clicks ÷ impressions</div>
+      </div>
+
+      <div class="kpi-card accent-blue">
+        <div class="kpi-label">Avg CPC</div>
+        <div class="kpi-value">$1.95</div>
+        <div class="kpi-subtext">Cost per click</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">Actions</div>
+        <div class="kpi-value small">99,568</div>
+        <div class="kpi-subtext">All tracked conversions</div>
+      </div>
+
+      <div class="kpi-card accent-orange">
+        <div class="kpi-label">Avg CPA</div>
+        <div class="kpi-value">$0.10</div>
+        <div class="kpi-subtext">Cost per action (approx.)</div>
+      </div>
+
+    </div>
+
+    <!-- Relative performance bar chart -->
+    <div class="section-label">Relative scale</div>
+    <div class="bar-section">
+      <div class="bar-chart">
+
+        <div class="bar-row">
+          <div class="bar-row-label">Impressions</div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+          <div class="bar-row-value">579,195</div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-row-label">Actions</div>
+          <div class="bar-track"><div class="bar-fill lime" style="width:17.2%"></div></div>
+          <div class="bar-row-value">99,568</div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-row-label">Clicks</div>
+          <div class="bar-track"><div class="bar-fill blue" style="width:0.9%"></div></div>
+          <div class="bar-row-value">5,357</div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-row-label">Spend (AUD)</div>
+          <div class="bar-track"><div class="bar-fill orange" style="width:1.8%"></div></div>
+          <div class="bar-row-value">$10,461</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Note -->
+    <div class="note">
+      <strong>⚠ CPA note:</strong> The “Actions” and CPA figures include all Meta-tracked events — likely micro-conversions such as page views and video plays, not just leads or enrolments. The low CPA (~$0.10) reflects this broad event definition. Confirm which conversion event is set as primary before using CPA for performance decisions.
+    </div>
+
+  </main>
+
+  <footer>
+    Cluey Learning AU &nbsp;·&nbsp; Meta Ads &nbsp;·&nbsp; 24–30 Apr 2026
+  </footer>
+
+</body>
+</html>
