@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Camp — Autumn 2026 Season Report</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --blue: #0066CC;
+    --blue-dark: #004a99;
+    --blue-light: #e6f0fa;
+    --blue-mid: #cce0f5;
+    --grey-dark: #1a1a2e;
+    --grey-mid: #4a4a6a;
+    --grey-light: #f4f7fb;
+    --grey-border: #dde4ee;
+    --white: #ffffff;
+    --green: #1a9e5c;
+    --green-light: #e6f7ef;
+    --red: #d63b3b;
+    --red-light: #fdf0f0;
+    --orange: #e07b00;
+    --orange-light: #fff4e0;
+    --font: 'Segoe UI', Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--grey-light);
+    color: var(--grey-dark);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--blue);
+    color: var(--white);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--white);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .brand-icon svg { display: block; }
+
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+
+  .brand-text p {
+    font-size: 13px;
+    opacity: 0.82;
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    text-align: right;
+    font-size: 13px;
+    opacity: 0.82;
+  }
+
+  .header-meta strong { font-size: 15px; opacity: 1; display: block; margin-bottom: 2px; }
+
+  /* ── Layout ── */
+  main { padding: 32px 40px; max-width: 1300px; margin: 0 auto; }
+
+  section { margin-bottom: 36px; }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--blue-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  h2::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background: var(--blue);
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── Cards ── */
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 20px 22px;
+    border: 1px solid var(--grey-border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card.highlight {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 1px var(--blue);
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--grey-mid);
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--grey-dark);
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .card.highlight .card-value { color: var(--blue); }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--grey-mid);
+    margin-top: 6px;
+  }
+
+  .card-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 8px;
+  }
+
+  .delta-down { background: var(--red-light); color: var(--red); }
+  .delta-up   { background: var(--green-light); color: var(--green); }
+  .delta-flat { background: var(--orange-light); color: var(--orange); }
+
+  .card-accent {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 60px; height: 60px;
+    background: var(--blue-light);
+    border-radius: 50% 0 0 0;
+    opacity: 0.5;
+  }
+
+  /* ── Charts ── */
+  .chart-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-grid-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .chart-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 22px 24px;
+    border: 1px solid var(--grey-border);
+  }
+
+  .chart-card h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--grey-dark);
+    margin-bottom: 4px;
+  }
+
+  .chart-card p.chart-desc {
+    font-size: 11px;
+    color: var(--grey-mid);
+    margin-bottom: 16px;
+  }
+
+  .chart-wrap { position: relative; }
+
+  /* ── Insights ── */
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .insight-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid var(--grey-border);
+    border-left: 4px solid var(--blue);
+  }
+
+  .insight-card.warn { border-left-color: var(--red); }
+  .insight-card.good { border-left-color: var(--green); }
+  .insight-card.note { border-left-color: var(--orange); }
+
+  .insight-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+
+  .insight-card.warn .insight-tag { color: var(--red); }
+  .insight-card.good .insight-tag { color: var(--green); }
+  .insight-card.note .insight-tag { color: var(--orange); }
+
+  .insight-card h4 {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .insight-card p {
+    font-size: 12px;
+    color: var(--grey-mid);
+    line-height: 1.5;
+  }
+
+  /* ── Channel table ── */
+  .table-card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--grey-border);
+    overflow: hidden;
+  }
+
+  .table-card table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  .table-card th {
+    background: var(--blue);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 10px 14px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .table-card th:first-child { text-align: left; }
+
+  .table-card td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--grey-border);
+    text-align: right;
+    color: var(--grey-dark);
+  }
+
+  .table-card td:first-child { text-align: left; font-weight: 600; }
+
+  .table-card tr:last-child td { border-bottom: none; }
+
+  .table-card tr:nth-child(even) td { background: var(--grey-light); }
+
+  .table-card tr.total-row td {
+    font-weight: 700;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    border-top: 2px solid var(--blue-mid);
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .pill-up   { background: var(--green-light); color: var(--green); }
+  .pill-down { background: var(--red-light); color: var(--red); }
+  .pill-flat { background: var(--orange-light); color: var(--orange); }
+
+  /* ── State section ── */
+  .state-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+
+  .state-card {
+    background: var(--white);
+    border-radius: 10px;
+    border: 1px solid var(--grey-border);
+    padding: 16px 14px;
+    text-align: center;
+  }
+
+  .state-name {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--grey-mid);
+    margin-bottom: 6px;
+  }
+
+  .state-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--grey-dark);
+    margin-bottom: 4px;
+  }
+
+  .state-share {
+    font-size: 11px;
+    color: var(--grey-mid);
+    margin-bottom: 8px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 11px;
+    color: var(--grey-mid);
+    border-top: 1px solid var(--grey-border);
+    margin-top: 12px;
+  }
+
+  .note-bar {
+    background: var(--blue-light);
+    border: 1px solid var(--blue-mid);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--blue-dark);
+    margin-bottom: 24px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="3" y="8" width="10" height="3" rx="1.5" fill="#0066CC"/>
+        <rect x="3" y="13" width="7" height="3" rx="1.5" fill="#0066CC"/>
+        <rect x="3" y="18" width="10" height="3" rx="1.5" fill="#0066CC"/>
+        <path d="M17 7l8 7-8 7" stroke="#0066CC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1>Code Camp</h1>
+      <p>EV Channel Performance Report</p>
+    </div>
+  </div>
+  <div class="header-meta">
+    <strong>Autumn 2026 Season</strong>
+    Compared to Spring 2025, Winter 2025 &amp; Autumn 2025
+  </div>
+</header>
+
+<main>
+
+  <div class="note-bar">
+    Revenue figures include GST. Seasonal weeks are indexed from campaign start date. All figures sourced from EV Channel Report — Autumn 2026.
+  </div>
+
+  <!-- Season Totals -->
+  <section>
+    <h2>Season Revenue — Total (incl. GST)</h2>
+    <div class="card-row">
+      <div class="card">
+        <div class="card-label">Autumn 2025</div>
+        <div class="card-value">$1.06M</div>
+        <div class="card-sub">$1,064,203</div>
+        <div class="card-accent"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Winter 2025</div>
+        <div class="card-value">$1.42M</div>
+        <div class="card-sub">$1,421,942</div>
+        <div class="card-accent"></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Spring 2025</div>
+        <div class="card-value">$1.05M</div>
+        <div class="card-sub">$1,050,516</div>
+        <div class="card-accent"></div>
+      </div>
+      <div class="card highlight">
+        <div class="card-label">Autumn 2026</div>
+        <div class="card-value">$961K</div>
+        <div class="card-sub">$961,302</div>
+        <div class="card-delta delta-down">▼ 9.7% vs Aut 2025</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Weekly trend + Cumulative -->
+  <section>
+    <h2>Weekly Revenue Trend</h2>
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <h3>Weekly Revenue by Season</h3>
+        <p class="chart-desc">Revenue (incl. GST) per campaign week — all four seasons indexed from Week 1</p>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Cumulative Revenue by Season</h3>
+        <p class="chart-desc">Running total across weeks — shows pacing gap vs prior seasons</p>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="cumulChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Channel performance -->
+  <section>
+    <h2>Channel Performance — Autumn 2026</h2>
+    <div class="chart-grid-3">
+      <div class="chart-card">
+        <h3>Channel Revenue — Dollar Impact vs Aut25+Spr25 Average</h3>
+        <p class="chart-desc">Positive = above average; negative = underperforming vs the two prior equivalent seasons</p>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="channelImpactChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Autumn 2026 Channel Mix</h3>
+        <p class="chart-desc">Share of total season revenue by channel</p>
+        <div class="chart-wrap" style="height:300px">
+          <canvas id="mixChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Channel detail table -->
+  <section>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th>Aut 2025</th>
+            <th>Win 2025</th>
+            <th>Spr 2025</th>
+            <th>Aut 2026</th>
+            <th>vs Aut25</th>
+            <th>vs Avg</th>
+            <th>$ Impact</th>
+            <th>Relative Perf</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Google (excl. branded)</td>
+            <td>$104,951</td>
+            <td>$156,445</td>
+            <td>$90,574</td>
+            <td>$96,257</td>
+            <td><span class="pill pill-down">-8%</span></td>
+            <td><span class="pill pill-down">-2%</span></td>
+            <td>-$1,506</td>
+            <td><span class="pill pill-up">+8%</span></td>
+          </tr>
+          <tr>
+            <td>Google Branded</td>
+            <td>$207,144</td>
+            <td>$257,429</td>
+            <td>$200,303</td>
+            <td>$177,787</td>
+            <td><span class="pill pill-down">-14%</span></td>
+            <td><span class="pill pill-down">-13%</span></td>
+            <td>-$25,937</td>
+            <td><span class="pill pill-down">-4%</span></td>
+          </tr>
+          <tr>
+            <td>Google Combined</td>
+            <td>$312,095</td>
+            <td>$404,502</td>
+            <td>$290,877</td>
+            <td>$274,043</td>
+            <td><span class="pill pill-down">-12%</span></td>
+            <td><span class="pill pill-down">-9%</span></td>
+            <td>-$27,443</td>
+            <td><span class="pill pill-flat">0%</span></td>
+          </tr>
+          <tr>
+            <td>Facebook</td>
+            <td>$33,145</td>
+            <td>$37,891</td>
+            <td>$22,093</td>
+            <td>$23,410</td>
+            <td><span class="pill pill-down">-29%</span></td>
+            <td><span class="pill pill-down">-15%</span></td>
+            <td>-$4,209</td>
+            <td><span class="pill pill-down">-6%</span></td>
+          </tr>
+          <tr>
+            <td>Bing Ads</td>
+            <td>$18,641</td>
+            <td>$31,434</td>
+            <td>$20,656</td>
+            <td>$21,300</td>
+            <td><span class="pill pill-up">+14%</span></td>
+            <td><span class="pill pill-up">+8%</span></td>
+            <td>+$1,652</td>
+            <td><span class="pill pill-up">+17%</span></td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td>$120,158</td>
+            <td>$168,124</td>
+            <td>$136,240</td>
+            <td>$110,022</td>
+            <td><span class="pill pill-down">-8%</span></td>
+            <td><span class="pill pill-down">-14%</span></td>
+            <td>-$18,177</td>
+            <td><span class="pill pill-down">-5%</span></td>
+          </tr>
+          <tr>
+            <td>Partner / Event Listings</td>
+            <td>$8,102</td>
+            <td>$12,403</td>
+            <td>$11,373</td>
+            <td>$6,926</td>
+            <td><span class="pill pill-down">-15%</span></td>
+            <td><span class="pill pill-down">-29%</span></td>
+            <td>-$2,811</td>
+            <td><span class="pill pill-down">-20%</span></td>
+          </tr>
+          <tr>
+            <td>Schools</td>
+            <td>$69,796</td>
+            <td>$23,354</td>
+            <td>$17,050</td>
+            <td>$34,607</td>
+            <td><span class="pill pill-down">-50%</span></td>
+            <td><span class="pill pill-down">-20%</span></td>
+            <td>-$8,816</td>
+            <td><span class="pill pill-down">-11%</span></td>
+          </tr>
+          <tr>
+            <td>Schools (Promo Codes)</td>
+            <td>$32,698</td>
+            <td>$41,511</td>
+            <td>$40,160</td>
+            <td>$44,560</td>
+            <td><span class="pill pill-up">+36%</span></td>
+            <td><span class="pill pill-up">+22%</span></td>
+            <td>+$8,131</td>
+            <td><span class="pill pill-up">+31%</span></td>
+          </tr>
+          <tr>
+            <td>Schools (Ash)</td>
+            <td>$59,903</td>
+            <td>$74,883</td>
+            <td>$64,034</td>
+            <td>$67,066</td>
+            <td><span class="pill pill-up">+12%</span></td>
+            <td><span class="pill pill-up">+8%</span></td>
+            <td>+$5,098</td>
+            <td><span class="pill pill-up">+17%</span></td>
+          </tr>
+          <tr>
+            <td>SMS</td>
+            <td>$64,382</td>
+            <td>$80,786</td>
+            <td>$62,912</td>
+            <td>$59,656</td>
+            <td><span class="pill pill-down">-7%</span></td>
+            <td><span class="pill pill-down">-6%</span></td>
+            <td>-$3,991</td>
+            <td><span class="pill pill-up">+3%</span></td>
+          </tr>
+          <tr>
+            <td>CRM (Email + SMS)</td>
+            <td>$184,540</td>
+            <td>$248,910</td>
+            <td>$199,152</td>
+            <td>$169,678</td>
+            <td><span class="pill pill-down">-8%</span></td>
+            <td><span class="pill pill-down">-12%</span></td>
+            <td>-$22,168</td>
+            <td><span class="pill pill-down">-2%</span></td>
+          </tr>
+          <tr>
+            <td>Unknown / Direct</td>
+            <td>$437,883</td>
+            <td>$654,076</td>
+            <td>$488,781</td>
+            <td>$430,915</td>
+            <td><span class="pill pill-down">-2%</span></td>
+            <td><span class="pill pill-down">-7%</span></td>
+            <td>-$32,417</td>
+            <td><span class="pill pill-up">+2%</span></td>
+          </tr>
+          <tr class="total-row">
+            <td>Total Revenue</td>
+            <td>$1,064,203</td>
+            <td>$1,421,942</td>
+            <td>$1,050,516</td>
+            <td>$961,302</td>
+            <td><span class="pill pill-down">-10%</span></td>
+            <td><span class="pill pill-down">-9%</span></td>
+            <td>-$96,058</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- State performance -->
+  <section>
+    <h2>State Performance — Autumn 2026 (incl. GST)</h2>
+    <div class="state-grid">
+      <div class="state-card">
+        <div class="state-name">NSW</div>
+        <div class="state-value">$396,771</div>
+        <div class="state-share">42% of revenue</div>
+        <span class="pill pill-flat">Flat vs Aut25</span>
+      </div>
+      <div class="state-card">
+        <div class="state-name">VIC</div>
+        <div class="state-value">$248,188</div>
+        <div class="state-share">26% of revenue</div>
+        <span class="pill pill-down">▼ 22% vs Aut25</span>
+      </div>
+      <div class="state-card">
+        <div class="state-name">QLD</div>
+        <div class="state-value">$129,074</div>
+        <div class="state-share">14% of revenue</div>
+        <span class="pill pill-flat">Flat vs Aut25</span>
+      </div>
+      <div class="state-card">
+        <div class="state-name">WA</div>
+        <div class="state-value">$94,273</div>
+        <div class="state-share">10% of revenue</div>
+        <span class="pill pill-down">▼ 29% vs Aut25</span>
+      </div>
+      <div class="state-card">
+        <div class="state-name">ACT</div>
+        <div class="state-value">$48,039</div>
+        <div class="state-share">5% of revenue</div>
+        <span class="pill pill-down">▼ 5% vs Aut25</span>
+      </div>
+      <div class="state-card">
+        <div class="state-name">SA</div>
+        <div class="state-value">$37,124</div>
+        <div class="state-share">4% of revenue</div>
+        <span class="pill pill-up">▲ 35% vs Aut25</span>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div class="chart-card">
+        <h3>State Revenue — All Seasons</h3>
+        <p class="chart-desc">Revenue (incl. GST) per state — comparing all four seasons</p>
+        <div class="chart-wrap" style="height:260px">
+          <canvas id="stateChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Insights -->
+  <section>
+    <h2>Key Insights</h2>
+    <div class="insights-grid">
+      <div class="insight-card warn">
+        <div class="insight-tag">Watch — Revenue</div>
+        <h4>Season down 9.7% vs Autumn 2025</h4>
+        <p>Total revenue of $961K is the weakest season in the dataset. Gap vs prior Autumn is $103K. All channels contracted except schools and Bing.</p>
+      </div>
+      <div class="insight-card warn">
+        <div class="insight-tag">Watch — Paid Search</div>
+        <h4>Google Branded declining</h4>
+        <p>Branded search revenue fell 14% vs Autumn 2025 (-$29K). Likely signals reduced organic brand demand or competitor bidding on brand terms. Unbranded held relatively well (+8% relative to season).</p>
+      </div>
+      <div class="insight-card warn">
+        <div class="insight-tag">Watch — State</div>
+        <h4>VIC significant underperformance</h4>
+        <p>Victoria declined 22% vs Autumn 2025 ($-70K) and lost 4 percentage points of revenue share (30% → 26%). Largest absolute contributor to overall revenue shortfall.</p>
+      </div>
+      <div class="insight-card warn">
+        <div class="insight-tag">Watch — CRM</div>
+        <h4>Email and CRM revenue declining</h4>
+        <p>Email down 14% vs average (-$18K); CRM overall down 12% (-$22K). May indicate list fatigue, deliverability issues, or reduced re-booking rates from prior cohorts.</p>
+      </div>
+      <div class="insight-card good">
+        <div class="insight-tag">Win — Schools</div>
+        <h4>Schools promo codes outperforming</h4>
+        <p>Schools (promo codes) up 36% vs Autumn 2025 and +31% vs the prior-season average. Revenue of $44.6K is the highest in the dataset for this channel. Clear growth lever.</p>
+      </div>
+      <div class="insight-card good">
+        <div class="insight-tag">Win — Schools</div>
+        <h4>Schools (Ash) growing</h4>
+        <p>Ash schools channel delivered $67K — up 12% vs Autumn 2025 and +17% relative to the overall season. Combined with promo codes, schools channels are the clear bright spot.</p>
+      </div>
+      <div class="insight-card good">
+        <div class="insight-tag">Win — State</div>
+        <h4>SA growing off a small base</h4>
+        <p>South Australia up 35% vs Autumn 2025 to $37.1K. Small absolute number but consistent growth across all three prior seasons. May warrant additional investment.</p>
+      </div>
+      <div class="insight-card note">
+        <div class="insight-tag">Note — Pacing</div>
+        <h4>Late-season surge in weeks 8–9</h4>
+        <p>Week 8 delivered $73.1K vs $30.2K in Autumn 2025 — a 142% uplift. Suggests bookings shifted later in the campaign window. Worth monitoring if this pattern continues into Winter 2026.</p>
+      </div>
+      <div class="insight-card note">
+        <div class="insight-tag">Note — Channel</div>
+        <h4>Unknown/Direct holds share at 45%</h4>
+        <p>Despite falling $32K in absolute terms, direct/unknown revenue is tracking with the overall season decline (-7% vs avg). Attribution gap remains the largest single "channel" and masks true performance.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Code Camp — EV Channel Report &nbsp;|&nbsp; Autumn 2026 Season &nbsp;|&nbsp; Source data: EV Channel Report.xlsx &nbsp;|&nbsp; Revenue figures include GST
+</footer>
+
+<script>
+  const blue   = '#0066CC';
+  const blueMid= '#3d8fd9';
+  const blueL  = '#7ab8ed';
+  const blueXL = '#b8d9f5';
+  const grey   = '#a0a8b8';
+
+  const weeks = ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6','Wk 7','Wk 8','Wk 9'];
+
+  // Weekly revenue (incl GST = ex GST * 1.1 approx, but using actual channel data)
+  // Using the weekly totals from Season Rev sheet (these are ex GST, matching totals given)
+  // Note: incl GST totals from Channel Summary; weekly breakdowns from Season Rev are ex GST
+  // Scaling weekly data by incl/excl ratio per season for consistency
+  const aut25w = [68172, 88819, 116443, 134061, 195161, 177395, 140463, 30205, 5962];
+  const win25w = [113919, 104707, 139433, 198010, 265323, 217231, 172398, 59819, 8260];
+  const spr25w = [88964, 87159, 97594, 153796, 213223, 155945, 112556, 30917, 6244];
+  const aut26w = [56709, 73263, 81049, 124082, 171605, 143409, 133666, 73101, 7990];
+
+  function cumul(arr) {
+    let s = 0;
+    return arr.map(v => (s += v));
+  }
+
+  const sharedOpts = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+    scales: {
+      x: { ticks: { font: { size: 11 } }, grid: { color: '#eef1f6' } },
+      y: { ticks: { font: { size: 11 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#eef1f6' } }
+    }
+  };
+
+  // Weekly chart
+  new Chart(document.getElementById('weeklyChart'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [
+        { label: 'Autumn 2026', data: aut26w, borderColor: blue, backgroundColor: blue+'22', borderWidth: 2.5, pointRadius: 4, tension: 0.3 },
+        { label: 'Autumn 2025', data: aut25w, borderColor: blueL, backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [4,3], pointRadius: 3, tension: 0.3 },
+        { label: 'Spring 2025', data: spr25w, borderColor: grey, backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [4,3], pointRadius: 3, tension: 0.3 },
+        { label: 'Winter 2025', data: win25w, borderColor: '#c8d8e8', backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [2,4], pointRadius: 3, tension: 0.3 }
+      ]
+    },
+    options: { ...sharedOpts }
+  });
+
+  // Cumulative chart
+  new Chart(document.getElementById('cumulChart'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [
+        { label: 'Autumn 2026', data: cumul(aut26w), borderColor: blue, backgroundColor: blue+'18', fill: true, borderWidth: 2.5, pointRadius: 4, tension: 0.3 },
+        { label: 'Autumn 2025', data: cumul(aut25w), borderColor: blueL, backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [4,3], pointRadius: 3, tension: 0.3 },
+        { label: 'Spring 2025', data: cumul(spr25w), borderColor: grey, backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [4,3], pointRadius: 3, tension: 0.3 },
+        { label: 'Winter 2025', data: cumul(win25w), borderColor: '#c8d8e8', backgroundColor: 'transparent', borderWidth: 1.5, borderDash: [2,4], pointRadius: 3, tension: 0.3 }
+      ]
+    },
+    options: { ...sharedOpts }
+  });
+
+  // Channel impact chart
+  const channelLabels = [
+    'Sch. Promo Codes','Schools (Ash)','Bing Ads','Google (excl branded)',
+    'SMS','Unknown/Direct','CRM','Email','Schools','Facebook',
+    'Google Branded','Partner/Events'
+  ];
+  const channelImpact = [8131, 5098, 1652, -1506, -3991, -32417, -22168, -18177, -8816, -4209, -25937, -2811];
+  const impactColors = channelImpact.map(v => v >= 0 ? '#1a9e5c' : '#d63b3b');
+  const impactBg = channelImpact.map(v => v >= 0 ? '#e6f7ef' : '#fdf0f0');
+
+  new Chart(document.getElementById('channelImpactChart'), {
+    type: 'bar',
+    data: {
+      labels: channelLabels,
+      datasets: [{
+        label: '$ Impact vs Avg',
+        data: channelImpact,
+        backgroundColor: impactColors,
+        borderColor: impactColors,
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' $' + ctx.raw.toLocaleString() } }
+      },
+      scales: {
+        x: {
+          ticks: { font: { size: 10 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' },
+          grid: { color: '#eef1f6' }
+        },
+        y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Channel mix donut
+  new Chart(document.getElementById('mixChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Google Paid','Facebook','Bing','Email','SMS','Schools','Unknown/Direct','Other'],
+      datasets: [{
+        data: [274043, 23410, 21300, 110022, 59656, 146233, 430915, 0],
+        backgroundColor: ['#0066CC','#3d8fd9','#7ab8ed','#1a9e5c','#26c471','#b8d9f5','#4a4a6a','#c8d8e8'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 10 }, boxWidth: 10, padding: 8 }
+        },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' $' + ctx.raw.toLocaleString() + ' (' + Math.round(ctx.raw/961302*100) + '%)'
+          }
+        }
+      }
+    }
+  });
+
+  // State chart
+  const states = ['NSW','VIC','QLD','WA','ACT','SA'];
+  new Chart(document.getElementById('stateChart'), {
+    type: 'bar',
+    data: {
+      labels: states,
+      datasets: [
+        { label: 'Autumn 2025', data: [384759, 318585, 143676, 132034, 45877, 27401], backgroundColor: blueXL, borderRadius: 3 },
+        { label: 'Winter 2025', data: [546372, 390952, 182550, 152906, 100711, 33520], backgroundColor: blueL, borderRadius: 3 },
+        { label: 'Spring 2025', data: [406397, 317451, 113913, 102631, 68016, 32353], backgroundColor: blueMid, borderRadius: 3 },
+        { label: 'Autumn 2026', data: [396771, 248188, 129074, 94273, 48039, 37124], backgroundColor: blue, borderRadius: 3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { labels: { font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        x: { ticks: { font: { size: 11 } }, grid: { color: '#eef1f6' } },
+        y: { ticks: { font: { size: 11 }, callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#eef1f6' } }
+      }
+    }
+  });
+</script>
+</body>
+</html>
