@@ -106,10 +106,16 @@ footer{background:var(--dark-green);color:rgba(255,255,255,0.45);text-align:cent
 
   <!-- Chart 1 -->
   <div class="section">
-    <div class="section-title">Chart 1 — Daily Spend, Start Trials &amp; Cluey+ Signups</div>
+    <div class="section-title">Chart 1 — Spend, Start Trials &amp; Cluey+ Signups</div>
     <div class="chart-card">
-      <p class="chart-subtitle">Stacked spend by campaign (right axis, AUD) · Start trials &amp; signups (left axis)</p>
-      <canvas id="chart1"></canvas>
+      <div class="flex-between">
+        <p class="chart-subtitle" style="margin-bottom:0">Stacked spend by campaign (right axis, AUD) · Start trials &amp; signups (left axis)</p>
+        <div class="time-toggle">
+          <button class="time-btn active" onclick="setC1(this,'day')">Day</button>
+          <button class="time-btn" onclick="setC1(this,'week')">Week</button>
+        </div>
+      </div>
+      <canvas id="chart1" style="margin-top:14px"></canvas>
     </div>
   </div>
 
@@ -307,31 +313,56 @@ document.getElementById('kpiTrials').textContent=fn(sum(BOF.trials));
 document.getElementById('kpiViews').textContent=fn(sum(TOF.views));
 
 // ── CHART 1 ───────────────────────────────────────────────────────────────────
-const c1=new Chart(document.getElementById('chart1'),{
-  type:'bar',
-  data:{
-    labels:DL,
+function weekBuckets(){
+  const weeks=[];let cur=null;
+  DATES.forEach((d,i)=>{
+    const dow=(new Date(d).getDay()+6)%7; // Mon=0 … Sun=6
+    if(dow===0||cur===null){cur={idxs:[i]};weeks.push(cur);}
+    else cur.idxs.push(i);
+  });
+  return weeks;
+}
+
+function c1Data(mode){
+  const ds=(bofSp,tofSp,trl,sig,lbl)=>({
+    labels:lbl,
     datasets:[
-      {label:'BOF Spend',data:BOF.spend,backgroundColor:hex2rgba('#F36D21',.75),borderColor:'#F36D21',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
-      {label:'TOF Spend',data:TOF.spend,backgroundColor:hex2rgba('#B2E67B',.75),borderColor:'#B2E67B',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
-      {label:'Start Trials',data:BOF.trials,type:'line',borderColor:'#450693',backgroundColor:'#450693',pointRadius:3,pointHoverRadius:5,borderWidth:2,tension:.3,yAxisID:'yL',order:1},
-      {label:'Cluey+ Signups',data:SIGNUPS,type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0}
+      {label:'BOF Spend',data:bofSp,backgroundColor:hex2rgba('#F36D21',.75),borderColor:'#F36D21',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
+      {label:'TOF Spend',data:tofSp,backgroundColor:hex2rgba('#B2E67B',.75),borderColor:'#B2E67B',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
+      {label:'Start Trials',data:trl,type:'line',borderColor:'#450693',backgroundColor:'#450693',pointRadius:3,pointHoverRadius:5,borderWidth:2,tension:.3,yAxisID:'yL',order:1},
+      {label:'Cluey+ Signups',data:sig,type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0}
     ]
+  });
+  if(mode==='day') return ds(BOF.spend,TOF.spend,BOF.trials,SIGNUPS,DL);
+  const wks=weekBuckets();
+  return ds(
+    wks.map(w=>+w.idxs.reduce((s,i)=>s+BOF.spend[i],0).toFixed(2)),
+    wks.map(w=>+w.idxs.reduce((s,i)=>s+TOF.spend[i],0).toFixed(2)),
+    wks.map(w=>w.idxs.reduce((s,i)=>s+BOF.trials[i],0)),
+    wks.map(w=>w.idxs.reduce((s,i)=>s+SIGNUPS[i],0)),
+    wks.map(w=>`${DL[w.idxs[0]]} – ${DL[w.idxs[w.idxs.length-1]]}`)
+  );
+}
+
+const c1opts={
+  responsive:true,
+  interaction:{mode:'index',intersect:false},
+  plugins:{
+    legend:{position:'top',labels:{font:{family:'Poppins',size:11},boxWidth:14}},
+    tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
   },
-  options:{
-    responsive:true,
-    interaction:{mode:'index',intersect:false},
-    plugins:{
-      legend:{position:'top',labels:{font:{family:'Poppins',size:11},boxWidth:14}},
-      tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
-    },
-    scales:{
-      yL:{position:'left',title:{display:true,text:'Count',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
-      yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
-      x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
-    }
+  scales:{
+    yL:{position:'left',title:{display:true,text:'Count',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
+    yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
+    x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
   }
-});
+};
+const chart1=new Chart(document.getElementById('chart1'),{type:'bar',data:c1Data('day'),options:c1opts});
+function setC1(btn,mode){
+  btn.closest('.time-toggle').querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const d=c1Data(mode);chart1.data.labels=d.labels;chart1.data.datasets=d.datasets;chart1.update();
+}
 
 // ── CHART 2 ───────────────────────────────────────────────────────────────────
 const c2=new Chart(document.getElementById('chart2'),{
