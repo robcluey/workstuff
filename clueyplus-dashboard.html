@@ -123,8 +123,14 @@ footer{background:var(--dark-green);color:rgba(255,255,255,0.45);text-align:cent
   <div class="section">
     <div class="section-title">Chart 2 — BOF Ad Set Spend vs Cluey+ Signups</div>
     <div class="chart-card">
-      <p class="chart-subtitle">Stacked daily BOF ad set spend (right axis) · Unique Cluey+ signups (left axis)</p>
-      <canvas id="chart2"></canvas>
+      <div class="flex-between">
+        <p class="chart-subtitle" style="margin-bottom:0">Stacked BOF ad set spend (right axis) · Unique Cluey+ signups (left axis)</p>
+        <div class="time-toggle">
+          <button class="time-btn active" onclick="setC2(this,'day')">Day</button>
+          <button class="time-btn" onclick="setC2(this,'week')">Week</button>
+        </div>
+      </div>
+      <canvas id="chart2" style="margin-top:14px"></canvas>
     </div>
   </div>
 
@@ -365,29 +371,50 @@ function setC1(btn,mode){
 }
 
 // ── CHART 2 ───────────────────────────────────────────────────────────────────
-const c2=new Chart(document.getElementById('chart2'),{
-  type:'bar',
-  data:{
-    labels:DL,
-    datasets:[
-      ...Object.keys(BOF_AS).map(n=>({label:n,data:BOF_AS[n],backgroundColor:hex2rgba(COL.BOF_AS[n],.75),borderColor:COL.BOF_AS[n],borderWidth:1,stack:'s',yAxisID:'yR',order:3})),
-      {label:'Cluey+ Signups',data:SIGNUPS,type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0}
-    ]
-  },
-  options:{
-    responsive:true,
-    interaction:{mode:'index',intersect:false},
-    plugins:{
-      legend:{position:'top',labels:{font:{family:'Poppins',size:10},boxWidth:12}},
-      tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
-    },
-    scales:{
-      yL:{position:'left',title:{display:true,text:'Signups',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
-      yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
-      x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
-    }
+function c2Data(mode){
+  const sigLine={label:'Cluey+ Signups',type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0};
+  if(mode==='day'){
+    return{
+      labels:DL,
+      datasets:[
+        ...Object.keys(BOF_AS).map(n=>({label:n,data:BOF_AS[n],backgroundColor:hex2rgba(COL.BOF_AS[n],.75),borderColor:COL.BOF_AS[n],borderWidth:1,stack:'s',yAxisID:'yR',order:3})),
+        {...sigLine,data:SIGNUPS}
+      ]
+    };
   }
-});
+  const wks=weekBuckets();
+  const lbl=wks.map(w=>`${DL[w.idxs[0]]} – ${DL[w.idxs[w.idxs.length-1]]}`);
+  return{
+    labels:lbl,
+    datasets:[
+      ...Object.keys(BOF_AS).map(n=>({
+        label:n,
+        data:wks.map(w=>+w.idxs.reduce((s,i)=>s+BOF_AS[n][i],0).toFixed(2)),
+        backgroundColor:hex2rgba(COL.BOF_AS[n],.75),borderColor:COL.BOF_AS[n],borderWidth:1,stack:'s',yAxisID:'yR',order:3
+      })),
+      {...sigLine,data:wks.map(w=>w.idxs.reduce((s,i)=>s+SIGNUPS[i],0))}
+    ]
+  };
+}
+const c2opts={
+  responsive:true,
+  interaction:{mode:'index',intersect:false},
+  plugins:{
+    legend:{position:'top',labels:{font:{family:'Poppins',size:10},boxWidth:12}},
+    tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
+  },
+  scales:{
+    yL:{position:'left',title:{display:true,text:'Signups',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
+    yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
+    x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
+  }
+};
+const chart2=new Chart(document.getElementById('chart2'),{type:'bar',data:c2Data('day'),options:c2opts});
+function setC2(btn,mode){
+  btn.closest('.time-toggle').querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const d=c2Data(mode);chart2.data.labels=d.labels;chart2.data.datasets=d.datasets;chart2.update();
+}
 
 // ── CHART 3 ───────────────────────────────────────────────────────────────────
 function c3Data(p){
