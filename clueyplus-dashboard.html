@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cluey+ Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;600&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --dark-green:#123329; --emerald:#19B269; --lime:#B2E67B; --orange:#F36D21;
+  --pastel-blue:#B7E2E2; --khaki:#E6E4AC; --ivory:#EFE9E1; --charcoal:#231F20;
+  --grape:#450693; --violet:#8C00FF; --ruby:#FF3F7F; --banana:#FFC400;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Poppins',sans-serif;background:var(--ivory);color:var(--charcoal);font-size:14px;line-height:1.5}
+header{background:var(--dark-green);padding:28px 40px;display:flex;align-items:center;gap:24px}
+.logo-mark{width:44px;height:44px;background:var(--emerald);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark span{color:white;font-family:'Merriweather',serif;font-size:22px;font-weight:600;line-height:1}
+.header-text h1{font-family:'Merriweather',serif;font-weight:300;font-size:26px;color:var(--lime);letter-spacing:-0.3px}
+.header-text p{font-size:12px;color:rgba(255,255,255,0.6);margin-top:3px}
+main{max-width:1400px;margin:0 auto;padding:32px 40px}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.kpi-card{background:white;border-radius:10px;padding:18px 20px;border-top:3px solid var(--emerald);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.kpi-card.orange{border-top-color:var(--orange)}
+.kpi-card.grape{border-top-color:var(--grape)}
+.kpi-card.lime{border-top-color:var(--lime)}
+.kpi-card.dark{border-top-color:var(--dark-green)}
+.kpi-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:#888;margin-bottom:7px}
+.kpi-value{font-family:'Merriweather',serif;font-size:24px;font-weight:600;color:var(--dark-green);line-height:1}
+.kpi-sub{font-size:11px;color:#aaa;margin-top:5px}
+.section{margin-bottom:28px}
+.section-title{font-family:'Merriweather',serif;font-weight:600;font-size:15px;color:var(--dark-green);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--lime)}
+.chart-card{background:white;border-radius:10px;padding:22px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.chart-card canvas{max-height:300px}
+.chart-subtitle{font-size:11px;color:#999;margin-bottom:14px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.flex-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.chart-label{font-size:12px;font-weight:600;color:var(--dark-green)}
+.time-toggle{display:flex;gap:5px}
+.time-btn{padding:4px 12px;border:1.5px solid var(--dark-green);border-radius:20px;background:white;color:var(--dark-green);font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.time-btn.active,.time-btn:hover{background:var(--dark-green);color:white}
+.period-row{display:flex;gap:8px;margin-bottom:20px}
+.period-btn{padding:7px 18px;border:2px solid var(--emerald);border-radius:6px;background:white;color:var(--dark-green);font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.period-btn.active{background:var(--emerald);color:white}
+.perf-table{width:100%;border-collapse:collapse;font-size:12px}
+.perf-table th{background:var(--dark-green);color:white;padding:9px 11px;text-align:left;font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:0.4px}
+.perf-table th:not(:first-child){text-align:right}
+.perf-table td{padding:8px 11px;border-bottom:1px solid #eee}
+.perf-table td:not(:first-child){text-align:right}
+.perf-table tr:nth-child(even) td{background:#fafafa}
+.perf-table tr:hover td{background:#f0f9f4}
+.insight-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}
+.insight-box{background:white;border-radius:10px;padding:18px 22px;border-left:4px solid var(--emerald)}
+.insight-box.orange{border-left-color:var(--orange)}
+.insight-box.grape{border-left-color:var(--grape)}
+.insight-box.lime{border-left-color:var(--lime)}
+.insight-box h4{font-size:12px;font-weight:600;color:var(--dark-green);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.4px}
+.insight-box p{font-size:12px;line-height:1.65;color:#444}
+.corr-val{font-family:'Merriweather',serif;font-size:36px;font-weight:600;color:var(--dark-green);line-height:1;margin-bottom:6px}
+footer{background:var(--dark-green);color:rgba(255,255,255,0.45);text-align:center;padding:14px;font-size:11px;margin-top:40px}
+.adset-note{font-size:11px;color:#aaa;margin-top:8px;font-style:italic}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark"><span>+</span></div>
+  <div class="header-text">
+    <h1>Cluey+ Performance Dashboard</h1>
+    <p>Meta Ads · 27 Mar – 7 May 2026 · Cluey Learning AU</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card orange">
+      <div class="kpi-label">Total Ad Spend</div>
+      <div class="kpi-value" id="kpiSpend">—</div>
+      <div class="kpi-sub">BOF + TOF combined</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Cluey+ Signups</div>
+      <div class="kpi-value" id="kpiSignups">—</div>
+      <div class="kpi-sub">Unique, deduplicated</div>
+    </div>
+    <div class="kpi-card dark">
+      <div class="kpi-label">Cost per Signup</div>
+      <div class="kpi-value" id="kpiCPS">—</div>
+      <div class="kpi-sub">Total spend / signups</div>
+    </div>
+    <div class="kpi-card grape">
+      <div class="kpi-label">BOF Start Trials</div>
+      <div class="kpi-value" id="kpiTrials">—</div>
+      <div class="kpi-sub">Meta pixel (website)</div>
+    </div>
+    <div class="kpi-card lime">
+      <div class="kpi-label">TOF Video Views</div>
+      <div class="kpi-value" id="kpiViews">—</div>
+      <div class="kpi-sub">clueyplus-tof-videoviews</div>
+    </div>
+  </div>
+
+  <!-- Chart 1 -->
+  <div class="section">
+    <div class="section-title">Chart 1 — Daily Spend, Start Trials &amp; Cluey+ Signups</div>
+    <div class="chart-card">
+      <p class="chart-subtitle">Stacked spend by campaign (right axis, AUD) · Start trials &amp; signups (left axis)</p>
+      <canvas id="chart1"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart 2 -->
+  <div class="section">
+    <div class="section-title">Chart 2 — BOF Ad Set Spend vs Cluey+ Signups</div>
+    <div class="chart-card">
+      <p class="chart-subtitle">Stacked daily BOF ad set spend (right axis) · Unique Cluey+ signups (left axis)</p>
+      <canvas id="chart2"></canvas>
+    </div>
+  </div>
+
+  <!-- Charts 3 & 4 -->
+  <div class="section">
+    <div class="section-title">Charts 3 &amp; 4 — Ad Set Spend by Day</div>
+    <div class="two-col">
+      <div class="chart-card">
+        <div class="flex-between">
+          <span class="chart-label">clueyplus-bof-leads</span>
+          <div class="time-toggle">
+            <button class="time-btn" onclick="setC3(this,'7')">7d</button>
+            <button class="time-btn" onclick="setC3(this,'14')">14d</button>
+            <button class="time-btn" onclick="setC3(this,'30')">30d</button>
+            <button class="time-btn active" onclick="setC3(this,'all')">All</button>
+          </div>
+        </div>
+        <canvas id="chart3"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="flex-between">
+          <span class="chart-label">clueyplus-tof-videoviews</span>
+          <div class="time-toggle">
+            <button class="time-btn" onclick="setC4(this,'7')">7d</button>
+            <button class="time-btn" onclick="setC4(this,'14')">14d</button>
+            <button class="time-btn" onclick="setC4(this,'30')">30d</button>
+            <button class="time-btn active" onclick="setC4(this,'all')">All</button>
+          </div>
+        </div>
+        <canvas id="chart4"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="section">
+    <div class="section-title">Performance Insights</div>
+    <div class="period-row">
+      <button class="period-btn" onclick="updateInsights(this,'7')">Last 7 days</button>
+      <button class="period-btn" onclick="updateInsights(this,'14')">Last 14 days</button>
+      <button class="period-btn" onclick="updateInsights(this,'30')">Last 30 days</button>
+      <button class="period-btn active" onclick="updateInsights(this,'all')">All time</button>
+    </div>
+
+    <div class="two-col" style="margin-bottom:18px">
+      <div class="chart-card">
+        <div style="font-size:12px;font-weight:600;color:var(--dark-green);margin-bottom:12px">Campaign Performance</div>
+        <table class="perf-table" id="tblCampaign"></table>
+      </div>
+      <div class="chart-card">
+        <div style="font-size:12px;font-weight:600;color:var(--dark-green);margin-bottom:12px">Period Summary</div>
+        <table class="perf-table" id="tblSummary"></table>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:18px">
+      <div style="font-size:12px;font-weight:600;color:var(--dark-green);margin-bottom:12px">BOF Ad Set Performance</div>
+      <table class="perf-table" id="tblAdset"></table>
+      <p class="adset-note" id="adsetNote"></p>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-box">
+        <h4>Spend vs Signup Correlation</h4>
+        <div class="corr-val" id="corrVal">—</div>
+        <p id="corrText"></p>
+      </div>
+      <div class="insight-box orange">
+        <h4>Top Ad Set — Cost per Start Trial</h4>
+        <p id="insTop"></p>
+      </div>
+      <div class="insight-box grape">
+        <h4>Spend Trend</h4>
+        <p id="insSpend"></p>
+      </div>
+      <div class="insight-box lime">
+        <h4>Signup Trend</h4>
+        <p id="insSignup"></p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>Cluey+ Dashboard · Meta Ads API + ClueyPlus CRM · Data to 7 May 2026</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DATES=['2026-03-27','2026-03-28','2026-03-29','2026-03-30','2026-03-31','2026-04-01','2026-04-02','2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07','2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14','2026-04-15','2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21','2026-04-22','2026-04-23','2026-04-24','2026-04-25','2026-04-26','2026-04-27','2026-04-28','2026-04-29','2026-04-30','2026-05-01','2026-05-02','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-05-07'];
+const N=DATES.length;
+const DL=DATES.map(d=>{const[,m,day]=d.split('-');return`${day}/${m}`;});
+
+const BOF={
+  spend:[40.36,99.44,102.60,109.46,114.08,105.97,82.69,69.96,113.93,95.47,113.06,103.43,190.30,184.07,188.38,187.87,188.23,201.14,213.45,208.29,206.24,201.74,179.64,221.43,203.65,228.84,242.02,232.77,221.52,199.41,246.57,242.23,240.63,227.10,210.38,189.44,153.62,131.79,163.26,142.70,160.49,64.92],
+  trials:[0,1,1,0,1,0,1,0,0,0,1,2,0,1,0,0,1,1,1,3,7,3,1,4,4,1,3,2,0,1,2,2,2,0,0,1,1,0,1,1,1,0],
+  reach:[1580,2179,1850,2535,2977,2904,2067,1428,2373,1840,2004,2332,3973,3667,4416,5390,4356,3455,3227,3397,3048,3163,3843,3715,3487,3393,3620,3477,4281,3669,3720,3582,3285,3317,3302,2927,2702,1889,2065,1749,1857,903],
+  clicks:[11,30,33,23,42,38,32,16,27,17,20,28,52,54,48,54,49,195,174,98,73,88,63,120,84,43,56,68,52,53,65,51,71,54,53,29,68,34,11,16,31,14]
+};
+const TOF={
+  spend:[0,0,0,0,0,0,12.74,31.44,25.49,37.33,33.34,23.48,32.23,28.80,27.28,27.42,34.75,32.40,31.02,28.32,27.59,27.91,26.76,34.80,33.15,35.41,29.45,26.00,29.59,25.91,32.42,38.86,33.75,29.44,35.24,29.20,21.44,32.82,35.61,32.70,28.06,8.47],
+  views:[0,0,0,0,0,0,411,1199,947,1500,1511,979,1493,1358,1193,1290,1616,1554,1502,1380,1344,1277,1215,1552,1564,1832,1337,1082,2601,2658,2020,1702,1225,2830,2850,2020,1228,1715,2103,1888,1775,508],
+  reach:[0,0,0,0,0,0,485,473,397,336,344,538,415,378,390,369,381,393,433,438,379,357,338,356,879,876,679,551,3829,4069,2450,1591,1043,4739,3635,2244,685,1029,1166,1256,1134,360],
+  clicks:[0,0,0,0,0,0,3,1,1,3,3,5,2,2,1,2,0,1,1,3,1,0,0,1,2,2,4,0,1,8,9,4,4,8,6,10,1,6,2,3,2,0]
+};
+const TOTAL_SPEND=DATES.map((_,i)=>+(BOF.spend[i]+TOF.spend[i]).toFixed(2));
+const SIGNUPS=[3,4,5,6,4,3,5,6,1,2,3,10,5,3,3,1,3,5,7,9,7,12,2,11,7,17,15,7,4,2,5,10,15,12,8,5,3,4,12,11,15,0];
+
+function z(n){return Array(n).fill(0);}
+function sp(obj,map){const a=z(N);Object.entries(map).forEach(([k,v])=>a[+k]=v);return a;}
+
+const BOF_AS={
+  'Winners':                  sp(N,{6:.51,7:20.7,8:30.81,9:40.11,10:38.06,11:32.55,12:48.11,13:62.5,14:126.33,15:159.05,16:138,17:119.71,18:111.29,19:103.69,20:104.71,21:102.21,22:32.18,23:105.19,24:102.47,25:109.45,26:122.42,27:118.4,28:131.54,29:89.47,30:122.43,31:119.91,32:115.98,33:117.69,34:115.71,35:116.82,36:133.47,37:117.86,38:148.37,39:111.26,40:78.96,41:37.78}),
+  'Comparison - AI':          sp(N,{0:17.97,1:48.91,2:51.02,3:54.17,4:53.74,5:52.5,6:38.61,7:21.43,8:18.98,9:18.51,10:20.45,11:21.2,12:26.04,13:17.24,14:4.57,15:4.92,16:16.33,17:20.98,18:23.31,19:37.97,20:56,21:67.16,22:130.69,23:62.26,24:53.3,25:48.03,26:28.13,27:39.02,28:34.68,29:49.2,30:50.49,31:49.21,32:41.09,33:36.54,34:36.72,35:24.75}),
+  'Broad Positioning':        sp(N,{0:17.75,1:49.38,2:51.58,3:55.29,4:60.06,5:53.47,6:43.57,7:27.83,8:64.14,9:36.85,10:54.55,11:30.95,12:63.7,13:32.43,14:10.92}),
+  'Comparison - Google':      sp(N,{11:8.13,12:17.25,13:20.62,14:14.87,15:8.48,16:13,17:22.24,18:26.06,19:14.56,20:3.85,21:.96,22:1.76,23:12.91,24:11.55,25:13.69,26:12.88,27:15.47,28:11.62,29:3.46,30:11.58,31:16.1,32:11.31,33:10.79,34:12.99,35:4.4}),
+  'Comparison - YouTube':     sp(N,{11:10.07,12:34.65,13:48.38,14:26.28,15:8.11,16:13.38,17:19.74,18:22.7,19:11.84,20:5.41,21:4.51,22:2.35,23:12.92,24:11.94,25:15.28,26:20.52,27:18.83,28:10.82,29:21.79,30:23.3,31:20.29,32:21.34,33:21.57,34:9.59,35:7.1}),
+  'Retargeting - Vid Views':  sp(N,{11:.53,12:.55,13:2.9,14:5.41,15:7.31,16:7.52,17:10.36,18:13.99,19:13.91,20:14.12,21:12.52,22:11.56,23:9.99,24:10.08,25:11.2,26:13.71,27:13.07,28:8.2,29:8.94,30:5.48,31:7.45,32:8.67,33:9.09,34:5.63,35:10.72,36:9.16,37:3.23,38:3.75,39:3.6,40:4.82,41:1.25}),
+  'Retargeting - Website':    sp(N,{17:8.11,18:16.1,19:26.32,20:22.15,21:14.38,22:1.1,23:18.16,24:14.31,25:17.4,26:16.55,27:17.22,28:14.99,29:7.84,30:18.37,31:16.17,32:14.96,33:16.91,34:13.74,35:15.54,36:10.99,37:10.7,38:11.14,39:10.65,40:13.22,41:4.06}),
+  'Subjects':                 sp(N,{25:13.79,26:27.81,27:10.76,28:9.67,29:18.71,30:14.92,31:13.1,32:27.28,33:14.51,34:16,35:10.11}),
+  'Pricing - Parents 6-17':   sp(N,{0:4.64,1:1.15,4:.28}),
+  'Testing - May':            sp(N,{39:17.19,40:63.49,41:27.18})
+};
+
+const BOF_AS_TRIALS={
+  'Winners':23,'Comparison - AI':7,'Broad Positioning':3,
+  'Comparison - Google':1,'Comparison - YouTube':4,
+  'Retargeting - Vid Views':6,'Retargeting - Website':5,
+  'Subjects':2,'Pricing - Parents 6-17':0,'Testing - May':0
+};
+const BOF_AS_META={
+  'Winners':              {reach:29846,clicks:798},
+  'Comparison - AI':      {reach:20116,clicks:494},
+  'Broad Positioning':    {reach:9428, clicks:218},
+  'Comparison - Google':  {reach:4427, clicks:87},
+  'Comparison - YouTube': {reach:6058, clicks:208},
+  'Retargeting - Vid Views':{reach:537, clicks:97},
+  'Retargeting - Website':{reach:489,  clicks:277},
+  'Subjects':             {reach:2883, clicks:31},
+  'Pricing - Parents 6-17':{reach:209, clicks:3},
+  'Testing - May':        {reach:1324, clicks:25}
+};
+
+const TOF_AS={
+  'video-lessons':    sp(N,{6:12.74,7:31.44,8:25.49,9:37.33,10:33.34,11:23.48,12:32.23,13:28.8,14:27.28,15:27.42,16:34.75,17:32.4,18:31.02,19:28.32,20:27.59,21:27.91,22:26.76,23:34.8,24:33.15,25:35.41,26:29.45,27:26,28:17.63,29:13.9,30:13.98,31:5.67}),
+  'mixed-clueyplus':  sp(N,{28:11.96,29:12.01,30:18.44,31:33.19,32:33.75,33:27.34,34:27.1,35:24.04,36:17.7,37:26.85,38:30.05,39:27.6,40:21.93,41:6.76}),
+  'voxpops-clueyplus':sp(N,{33:2.1,34:8.14,35:5.16,36:3.74,37:5.97,38:5.56,39:5.1,40:6.13,41:2.02})
+};
+
+// ── COLOURS ───────────────────────────────────────────────────────────────────
+const COL={
+  BOF_AS:{
+    'Winners':'#F36D21','Comparison - AI':'#19B269','Broad Positioning':'#B2E67B',
+    'Comparison - Google':'#B7E2E2','Comparison - YouTube':'#FFC400',
+    'Retargeting - Vid Views':'#450693','Retargeting - Website':'#FF3F7F',
+    'Subjects':'#8C00FF','Pricing - Parents 6-17':'#E6E4AC','Testing - May':'#231F20'
+  },
+  TOF_AS:{
+    'video-lessons':'#19B269','mixed-clueyplus':'#F36D21','voxpops-clueyplus':'#B2E67B'
+  }
+};
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+const f$=v=>'$'+v.toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fn=v=>v.toLocaleString('en-AU');
+const sum=a=>a.reduce((s,v)=>s+v,0);
+const sliceSum=(a,s,e)=>a.slice(s,e+1).reduce((t,v)=>t+v,0);
+
+function periodBounds(p){
+  return p==='7'?[35,41]:p==='14'?[28,41]:p==='30'?[12,41]:[0,41];
+}
+
+function pearson(x,y){
+  const n=x.length,mx=sum(x)/n,my=sum(y)/n;
+  const num=x.reduce((a,v,i)=>a+(v-mx)*(y[i]-my),0);
+  const den=Math.sqrt(x.reduce((a,v)=>a+(v-mx)**2,0)*y.reduce((a,v)=>a+(v-my)**2,0));
+  return den?num/den:0;
+}
+
+function hex2rgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return`rgba(${r},${g},${b},${a})`;}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+document.getElementById('kpiSpend').textContent=f$(sum(TOTAL_SPEND));
+document.getElementById('kpiSignups').textContent=fn(sum(SIGNUPS));
+document.getElementById('kpiCPS').textContent=f$(sum(TOTAL_SPEND)/sum(SIGNUPS));
+document.getElementById('kpiTrials').textContent=fn(sum(BOF.trials));
+document.getElementById('kpiViews').textContent=fn(sum(TOF.views));
+
+// ── CHART 1 ───────────────────────────────────────────────────────────────────
+const c1=new Chart(document.getElementById('chart1'),{
+  type:'bar',
+  data:{
+    labels:DL,
+    datasets:[
+      {label:'BOF Spend',data:BOF.spend,backgroundColor:hex2rgba('#F36D21',.75),borderColor:'#F36D21',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
+      {label:'TOF Spend',data:TOF.spend,backgroundColor:hex2rgba('#B2E67B',.75),borderColor:'#B2E67B',borderWidth:1,stack:'spend',yAxisID:'yR',order:3},
+      {label:'Start Trials',data:BOF.trials,type:'line',borderColor:'#450693',backgroundColor:'#450693',pointRadius:3,pointHoverRadius:5,borderWidth:2,tension:.3,yAxisID:'yL',order:1},
+      {label:'Cluey+ Signups',data:SIGNUPS,type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0}
+    ]
+  },
+  options:{
+    responsive:true,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'top',labels:{font:{family:'Poppins',size:11},boxWidth:14}},
+      tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
+    },
+    scales:{
+      yL:{position:'left',title:{display:true,text:'Count',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
+      yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
+      x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
+    }
+  }
+});
+
+// ── CHART 2 ───────────────────────────────────────────────────────────────────
+const c2=new Chart(document.getElementById('chart2'),{
+  type:'bar',
+  data:{
+    labels:DL,
+    datasets:[
+      ...Object.keys(BOF_AS).map(n=>({label:n,data:BOF_AS[n],backgroundColor:hex2rgba(COL.BOF_AS[n],.75),borderColor:COL.BOF_AS[n],borderWidth:1,stack:'s',yAxisID:'yR',order:3})),
+      {label:'Cluey+ Signups',data:SIGNUPS,type:'line',borderColor:'#123329',backgroundColor:'#123329',pointRadius:3,pointHoverRadius:5,borderWidth:2.5,tension:.3,yAxisID:'yL',order:0}
+    ]
+  },
+  options:{
+    responsive:true,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{position:'top',labels:{font:{family:'Poppins',size:10},boxWidth:12}},
+      tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return ctx.dataset.yAxisID==='yR'?`${ctx.dataset.label}: ${f$(v)}`:`${ctx.dataset.label}: ${fn(v)}`;}}}
+    },
+    scales:{
+      yL:{position:'left',title:{display:true,text:'Signups',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{color:'#eee'}},
+      yR:{position:'right',title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},beginAtZero:true,grid:{drawOnChartArea:false}},
+      x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}
+    }
+  }
+});
+
+// ── CHART 3 ───────────────────────────────────────────────────────────────────
+function c3Data(p){
+  const[s]=periodBounds(p);
+  return{
+    labels:DL.slice(s),
+    datasets:Object.keys(BOF_AS).map(n=>({label:n,data:BOF_AS[n].slice(s),backgroundColor:hex2rgba(COL.BOF_AS[n],.8),borderColor:COL.BOF_AS[n],borderWidth:1}))
+  };
+}
+const c3opts={responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{font:{family:'Poppins',size:10},boxWidth:12}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${f$(ctx.parsed.y)}`}}},scales:{y:{stacked:true,beginAtZero:true,title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},grid:{color:'#eee'}},x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}}};
+const chart3=new Chart(document.getElementById('chart3'),{type:'bar',data:c3Data('all'),options:c3opts});
+function setC3(btn,p){document.querySelectorAll('#chart3').forEach(()=>{});btn.closest('.time-toggle').querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const d=c3Data(p);chart3.data.labels=d.labels;chart3.data.datasets=d.datasets;chart3.update();}
+
+// ── CHART 4 ───────────────────────────────────────────────────────────────────
+function c4Data(p){
+  const[s]=periodBounds(p);
+  return{
+    labels:DL.slice(s),
+    datasets:Object.keys(TOF_AS).map(n=>({label:n,data:TOF_AS[n].slice(s),backgroundColor:hex2rgba(COL.TOF_AS[n],.8),borderColor:COL.TOF_AS[n],borderWidth:1}))
+  };
+}
+const c4opts={responsive:true,interaction:{mode:'index',intersect:false},plugins:{legend:{position:'top',labels:{font:{family:'Poppins',size:11},boxWidth:12}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${f$(ctx.parsed.y)}`}}},scales:{y:{stacked:true,beginAtZero:true,title:{display:true,text:'Spend AUD',font:{family:'Poppins',size:10}},grid:{color:'#eee'}},x:{stacked:true,ticks:{font:{family:'Poppins',size:9},maxRotation:45}}}};
+const chart4=new Chart(document.getElementById('chart4'),{type:'bar',data:c4Data('all'),options:c4opts});
+function setC4(btn,p){btn.closest('.time-toggle').querySelectorAll('.time-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');const d=c4Data(p);chart4.data.labels=d.labels;chart4.data.datasets=d.datasets;chart4.update();}
+
+// ── INSIGHTS ──────────────────────────────────────────────────────────────────
+function updateInsights(btn,p){
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const[s,e]=periodBounds(p);
+  const bofSp=sliceSum(BOF.spend,s,e),tofSp=sliceSum(TOF.spend,s,e);
+  const totSp=+(bofSp+tofSp).toFixed(2);
+  const trials=sliceSum(BOF.trials,s,e),views=sliceSum(TOF.views,s,e);
+  const bofR=sliceSum(BOF.reach,s,e),tofR=sliceSum(TOF.reach,s,e);
+  const bofC=sliceSum(BOF.clicks,s,e),tofC=sliceSum(TOF.clicks,s,e);
+  const sigs=sliceSum(SIGNUPS,s,e);
+  const cps=sigs?totSp/sigs:0,cpt=trials?bofSp/trials:0;
+
+  // Campaign table
+  document.getElementById('tblCampaign').innerHTML=`
+    <thead><tr><th>Campaign</th><th>Spend</th><th>Reach</th><th>Link Clicks</th><th>Results</th><th>Cost/Result</th></tr></thead>
+    <tbody>
+      <tr><td>clueyplus-bof-leads</td><td>${f$(bofSp)}</td><td>${fn(bofR)}</td><td>${fn(bofC)}</td><td>${fn(trials)} trials</td><td>${cpt?f$(cpt):'—'}</td></tr>
+      <tr><td>clueyplus-tof-videoviews</td><td>${f$(tofSp)}</td><td>${fn(tofR)}</td><td>${fn(tofC)}</td><td>${fn(views)} views</td><td>${views?'$'+(tofSp/views).toFixed(3):'—'}</td></tr>
+    </tbody>`;
+
+  // Summary table
+  document.getElementById('tblSummary').innerHTML=`
+    <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Total Spend</td><td>${f$(totSp)}</td></tr>
+      <tr><td>Cluey+ Signups</td><td>${fn(sigs)}</td></tr>
+      <tr><td>Cost per Signup</td><td>${cps?f$(cps):'—'}</td></tr>
+      <tr><td>BOF Start Trials</td><td>${fn(trials)}</td></tr>
+      <tr><td>Cost per Trial (BOF)</td><td>${cpt?f$(cpt):'—'}</td></tr>
+      <tr><td>TOF Video Views</td><td>${fn(views)}</td></tr>
+    </tbody>`;
+
+  // Adset table
+  const isAll=(p==='all');
+  const rows=Object.keys(BOF_AS).map(n=>{
+    const sp=sliceSum(BOF_AS[n],s,e);
+    const tr=isAll?BOF_AS_TRIALS[n]:'~';
+    const r=isAll?BOF_AS_META[n].reach:'~';
+    const cl=isAll?BOF_AS_META[n].clicks:'~';
+    const cpt=isAll&&BOF_AS_TRIALS[n]>0?f$(sp/BOF_AS_TRIALS[n]):'—';
+    return{n,sp,tr,r,cl,cpt};
+  }).filter(r=>r.sp>0).sort((a,b)=>b.sp-a.sp);
+
+  document.getElementById('tblAdset').innerHTML=`
+    <thead><tr><th>Ad Set</th><th>Spend</th><th>Reach</th><th>Link Clicks</th><th>Start Trials</th><th>Cost/Trial</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r.n}</td><td>${f$(r.sp)}</td><td>${typeof r.r==='number'?fn(r.r):r.r}</td><td>${typeof r.cl==='number'?fn(r.cl):r.cl}</td><td>${r.tr}</td><td>${r.cpt}</td></tr>`).join('')}</tbody>`;
+  document.getElementById('adsetNote').textContent=isAll?'':'Reach and link click data shown for all-time only. ~ indicates aggregate data not sliced for this period.';
+
+  // Correlation
+  const xS=TOTAL_SPEND.slice(s,e+1),yS=SIGNUPS.slice(s,e+1);
+  const r=pearson(xS,yS),rr=r.toFixed(2);
+  document.getElementById('corrVal').textContent=rr;
+  const abs=Math.abs(r),str=abs>.7?'Strong':abs>.4?'Moderate':abs>.2?'Weak':'Negligible';
+  const dir=r>=0?'positive':'negative';
+  let txt=`${str} ${dir} correlation (Pearson r = ${rr}). `;
+  if(abs>.5)txt+=`Higher ad spend days reliably coincide with more Cluey+ signups — consistent with Meta driving measurable bottom-funnel demand.`;
+  else if(abs>.25)txt+=`Some tendency for signups to rise on higher-spend days, but the relationship is imperfect. Organic, direct, and other paid channels also contribute meaningfully.`;
+  else txt+=`No reliable same-day relationship detected. Signups may lag spend by 1–3 days, or organic/direct channels dominate total signup volume.`;
+  document.getElementById('corrText').textContent=txt;
+
+  // Top adset
+  const withTrials=Object.keys(BOF_AS_TRIALS).filter(n=>BOF_AS_TRIALS[n]>0);
+  const ranked=withTrials.sort((a,b)=>(sum(BOF_AS[a])/BOF_AS_TRIALS[a])-(sum(BOF_AS[b])/BOF_AS_TRIALS[b]));
+  if(ranked.length){
+    const best=ranked[0],cptBest=sum(BOF_AS[best])/BOF_AS_TRIALS[best];
+    document.getElementById('insTop').textContent=`${best}: ${f$(cptBest)}/trial (${BOF_AS_TRIALS[best]} trials from ${f$(sum(BOF_AS[best]))} spend all-time). Retargeting - Vid Views benefits from warm audience; Comparison - AI delivers strong volume with decent efficiency.`;
+  }
+
+  // Spend trend
+  const w1=sliceSum(TOTAL_SPEND,0,6),wLast=sliceSum(TOTAL_SPEND,35,41),peak=Math.max(...TOTAL_SPEND);
+  const pkIdx=TOTAL_SPEND.indexOf(peak);
+  document.getElementById('insSpend').textContent=`Week 1 total: ${f$(w1)}. Final week: ${f$(wLast)}. Peak single-day spend: ${f$(peak)} on ${DL[pkIdx]}. BOF spend stabilised ~$200/day from mid-April as the "Winners" ad set scaled.`;
+
+  // Signup trend
+  const earlyW=sliceSum(SIGNUPS,0,9),peakW=sliceSum(SIGNUPS,24,31),pkSig=Math.max(...SIGNUPS),pkSigIdx=SIGNUPS.indexOf(pkSig);
+  document.getElementById('insSignup').textContent=`First 10 days: ${earlyW} signups. Peak 8-day window (20–27 Apr): ${peakW} signups. Single highest day: ${pkSig} on ${DL[pkSigIdx]}. The ramp from late March to mid-April aligns with BOF spend increasing, suggesting Meta is contributing to top-of-funnel awareness that converts 3–7 days later.`;
+}
+
+// Init with all-time
+updateInsights(document.querySelector('.period-btn.active'),'all');
+</script>
+</body>
+</html>
