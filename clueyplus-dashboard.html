@@ -241,16 +241,20 @@ const SIGNUPS=BOF.trials;
 function z(n){return Array(n).fill(0);}
 function sp(obj,map){const a=z(N);Object.entries(map).forEach(([k,v])=>a[+k]=v);return a;}
 
+// Adset spend uses weekly totals placed on the week-start index (Mon).
+// Index map: 0=27Mar, 1=28Mar, 8=4Apr, 15=11Apr, 22=18Apr, 29=25Apr, 36=2May, 43=9May
+// Week of 21Mar maps to index 0 (campaign started 27Mar, only day in that week).
 const BOF_AS={
-  'Pricing - Parents 6-17': sp(N,{0:4.64,1:1.15,4:0.28}),
-  'Comparison / Positioning Against_Round2 - AI': sp(N,{0:17.97,1:48.91,2:51.02,3:54.17,4:53.74,5:52.5,6:38.61,7:21.43,8:18.98,9:18.51,10:20.45,11:21.2,12:26.04,13:17.24,14:4.57,15:4.92,16:16.33,17:20.98,18:23.31,19:37.97,20:56,21:67.16,22:130.69,23:62.26,24:53.3,25:48.03,26:28.13,27:39.02,28:34.68,29:49.2,30:50.49,31:49.21,32:41.09,33:36.54,34:36.72,35:24.75}),
-  'Broad Product Positioning_Round2': sp(N,{0:17.75,1:49.38,2:51.58,3:55.29,4:60.06,5:53.47,6:43.57,7:27.83,8:64.14,9:36.85,10:54.55,11:30.95,12:63.7,13:32.43,14:10.92}),
-  'Winners': sp(N,{6:0.51,7:20.7,8:30.81,9:40.11,10:38.06,11:32.55,12:48.11,13:62.5,14:126.33,15:159.05,16:138,17:119.71,18:111.29,19:103.69,20:104.71,21:102.21,22:32.18,23:105.19,24:102.47,25:109.45,26:122.42,27:118.4,28:131.54,29:89.47,30:122.43,31:119.91,32:115.98,33:117.69,34:115.71,35:116.82,36:133.47}),
-  'Comparison - Google': sp(N,{11:8.13,12:17.25,13:20.62,14:14.87,15:8.48,16:13,17:22.24,18:26.06,19:14.56,20:3.85,21:0.96,22:1.76,23:12.91,24:11.55,25:13.69,26:12.88,27:15.47,28:11.62,29:3.46,30:11.58,31:16.1,32:11.31,33:10.79,34:12.99,35:4.4}),
-  'Comparison - YouTube': sp(N,{11:10.07,12:34.65,13:48.38,14:26.28,15:8.11,16:13.38,17:19.74,18:22.7,19:11.84,20:5.41,21:4.51,22:2.35,23:12.92,24:11.94,25:15.28,26:20.52,27:18.83,28:10.82,29:21.79,30:23.3,31:20.29,32:21.34,33:21.57,34:9.59,35:7.1}),
-  'Retargeting  - Video Views': sp(N,{11:0.53,12:0.55,13:2.9,14:5.41,15:7.31,16:7.52,17:10.36,18:13.99,19:13.91,20:14.12,21:12.52,22:11.56,23:9.99,24:10.08,25:11.2,26:13.71,27:13.07,28:8.2,29:8.94,30:5.48,31:7.45,32:8.67,33:9.09,34:5.63,35:10.72,36:9.16}),
-  'Retargeting  - Website Visitors': sp(N,{17:8.11,18:16.1,19:26.32,20:22.15,21:14.38,22:1.1,23:18.16,24:14.31,25:17.4,26:16.55,27:17.22,28:14.99,29:7.84,30:18.37,31:16.17,32:14.96,33:16.91,34:13.74,35:15.54,36:10.99}),
-  'Subjects': sp(N,{25:13.79,26:27.81,27:10.76,28:9.67,29:18.71,30:14.92,31:13.1,32:27.28,33:14.51,34:16,35:10.11})
+  'Pricing - Parents 6-17': sp(N,{0:4.64,1:1.43}),
+  'Comparison / Positioning Against_Round2 - AI': sp(N,{0:17.97,1:320.38,8:126.99,15:226.67,22:396.11,29:288}),
+  'Broad Product Positioning_Round2': sp(N,{0:17.75,1:341.18,8:293.54}),
+  'Winners': sp(N,{1:21.21,8:378.47,15:838.66,22:721.65,29:798.01,36:769.67,43:875.52}),
+  'Comparison - Google': sp(N,{8:60.87,15:89.15,22:79.88,29:70.63}),
+  'Comparison - YouTube': sp(N,{8:119.38,15:85.69,22:92.66,29:124.98}),
+  'Retargeting  - Video Views': sp(N,{8:9.39,15:79.73,22:77.81,29:55.98,36:31.1,43:4.48}),
+  'Retargeting  - Website Visitors': sp(N,{15:87.06,22:99.73,29:103.53,36:90.48,43:92.26}),
+  'Subjects': sp(N,{22:62.03,29:114.63}),
+  'Testing - May': sp(N,{36:245.15,43:502.28})
 };
 
 const BOF_AS_TRIALS={
@@ -262,23 +266,25 @@ const BOF_AS_TRIALS={
   'Comparison - YouTube': 0,
   'Retargeting  - Video Views': 0,
   'Retargeting  - Website Visitors': 0,
-  'Subjects': 0
+  'Subjects': 0,
+  'Testing - May': 0
 };
 const BOF_AS_META={
   'Pricing - Parents 6-17': {reach:213,clicks:5},
-  'Comparison / Positioning Against_Round2 - AI': {reach:31952,clicks:846},
-  'Broad Product Positioning_Round2': {reach:14860,clicks:371},
-  'Winners': {reach:54856,clicks:1219},
-  'Comparison - Google': {reach:6222,clicks:143},
-  'Comparison - YouTube': {reach:8686,clicks:295},
-  'Retargeting  - Video Views': {reach:6072,clicks:103},
-  'Retargeting  - Website Visitors': {reach:2367,clicks:254},
-  'Subjects': {reach:4064,clicks:73}
+  'Comparison / Positioning Against_Round2 - AI': {reach:26776,clicks:846},
+  'Broad Product Positioning_Round2': {reach:11119,clicks:371},
+  'Winners': {reach:54073,clicks:1592},
+  'Comparison - Google': {reach:5236,clicks:143},
+  'Comparison - YouTube': {reach:7192,clicks:295},
+  'Retargeting  - Video Views': {reach:1832,clicks:109},
+  'Retargeting  - Website Visitors': {reach:1477,clicks:311},
+  'Subjects': {reach:3178,clicks:73},
+  'Testing - May': {reach:7891,clicks:270}
 };
 const TOF_AS={
-  'video-lessons': sp(N,{6:12.74,7:31.44,8:25.49,9:37.33,10:33.34,11:23.48,12:32.23,13:28.8,14:27.28,15:27.42,16:34.75,17:32.4,18:31.02,19:28.32,20:27.59,21:27.91,22:26.76,23:34.8,24:33.15,25:35.41,26:29.45,27:26,28:17.63,29:13.9,30:13.98,31:5.67}),
-  'mixed-clueyplus': sp(N,{28:11.96,29:12.01,30:18.44,31:33.19,32:33.75,33:27.34,34:27.1,35:24.04,36:17.7,37:26.85,38:30.05,39:27.6,40:21.93,41:28.01,42:21.98,43:16.72,44:24.44,45:30.34,46:24.5,47:9.2}),
-  'voxpops-clueyplus': sp(N,{33:2.1,34:8.14,35:5.16,36:3.74,37:5.97,38:5.56,39:5.1,40:6.13,41:5.59,42:4.71,43:3.74,44:5.44,45:5.7,46:5.46,47:1.64})
+  'video-lessons': sp(N,{1:44.18,8:207.95,15:209.41,22:203.2,29:33.55}),
+  'mixed-clueyplus': sp(N,{22:11.96,29:175.87,36:174.12,43:106.81}),
+  'voxpops-clueyplus': sp(N,{29:15.4,36:36.8,43:22.62})
 };
 // ── COLOURS ───────────────────────────────────────────────────────────────────
 const COL={
@@ -286,7 +292,7 @@ const COL={
     'Winners':'#F36D21','Comparison / Positioning Against_Round2 - AI':'#19B269','Broad Product Positioning_Round2':'#B2E67B',
     'Comparison - Google':'#B7E2E2','Comparison - YouTube':'#FFC400',
     'Retargeting  - Video Views':'#450693','Retargeting  - Website Visitors':'#FF3F7F',
-    'Subjects':'#8C00FF','Pricing - Parents 6-17':'#E6E4AC'
+    'Subjects':'#8C00FF','Pricing - Parents 6-17':'#E6E4AC','Testing - May':'#231F20'
   },
   TOF_AS:{
     'video-lessons':'#19B269','mixed-clueyplus':'#F36D21','voxpops-clueyplus':'#B2E67B'
